@@ -122,7 +122,7 @@ public class Model extends JPanel implements ActionListener {
     private void showOutroScreen(Graphics2D g2d) {
 
        int lev = (score / 194) + 1;
-       if(lev < 6)
+       if(lev < 7)
        {
            String s = ("YOU REACHED LEVEL: " + lev + " ON 6");
            g2d.setColor(Color.white);
@@ -131,7 +131,7 @@ public class Model extends JPanel implements ActionListener {
            g2d.setColor(Color.yellow);
            g2d.drawString(start, 12, 173);
        }
-       else if (lev == 6){
+       else if (lev == 7){
            String s = "WELL DONE YOU COMPLETED THE GAME!";
            g2d.setColor(Color.white);
            g2d.drawString(s, 12, 150);
@@ -168,12 +168,12 @@ public class Model extends JPanel implements ActionListener {
             i++;
         }
 
-        if (finished && lev != 6) {
+        if (finished && lev != 7) {
 
             //score += 50;
 
             if (N_GHOSTS < 6) {
-                N_GHOSTS++;
+                N_GHOSTS+= 0; // ++
             }
 
             if (currentSpeed < maxSpeed) {
@@ -435,9 +435,9 @@ public class Model extends JPanel implements ActionListener {
         drawMaze(g2d);
         drawScore(g2d);
 
-        if (inGame) {
+        if (inGame){
             playGame(g2d);
-        } else  if (!inGame && !dead){
+        } else  if (!inGame && !dead && lev < 7){
             showIntroScreen(g2d);
         }
         else if(!inGame && dead)
