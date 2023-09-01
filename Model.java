@@ -444,7 +444,7 @@ public class Model extends JPanel implements ActionListener {
         {
             showOutroScreen(g2d);
         }
-        else if( !inGame && lev == 6)
+        else if( !inGame && lev == 7)
         {
             showOutroScreen(g2d);
         }
