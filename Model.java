@@ -1,4 +1,6 @@
-package app.pacmanmattia;
+package game.antman;
+
+//package app.pacmanmattia;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -16,13 +18,15 @@ public class Model extends JPanel implements ActionListener {
     private boolean inGame = false;
     private boolean dying = false;
 
+    private boolean dead = false;
+
     private final int BLOCK_SIZE = 24;
     private final int N_BLOCKS = 15;
     private final int SCREEN_SIZE = N_BLOCKS * BLOCK_SIZE;
-    private final int MAX_GHOSTS = 12;
+    private final int MAX_GHOSTS = 6;
     private final int PACMAN_SPEED = 6;
 
-    private int N_GHOSTS = 6;
+    private int N_GHOSTS  ;//= 6; // 6
     private int lives, score;
     private int[] dx, dy;
     private int[] ghost_x, ghost_y, ghost_dx, ghost_dy, ghostSpeed;
@@ -52,18 +56,18 @@ public class Model extends JPanel implements ActionListener {
     };
 
     private final int validSpeeds[] = {1, 2, 3, 4, 6, 8};
-    private final int maxSpeed = 6;
+    private final int maxSpeed = 3; //6
 
     private int currentSpeed = 3;
     private short[] screenData;
     private Timer timer;
 
-    public Model() {
+    public Model() { // chiama il costruttore
 
         loadImages();
         initVariables();
-        addKeyListener(new TAdapter());
-        setFocusable(true);
+        addKeyListener(new Model.TAdapter());
+        setFocusable(true); // dicoe che a classe model e focussabile , cioe leggo i tasti tastier
         initGame();
     }
 
@@ -115,11 +119,35 @@ public class Model extends JPanel implements ActionListener {
         g2d.drawString(start, (SCREEN_SIZE)/4, 150);
     }
 
+    private void showOutroScreen(Graphics2D g2d) {
+
+       int lev = (score / 194) + 1;
+       if(lev < 6)
+       {
+           String s = ("YOU REACHED LEVEL: " + lev + " ON 6");
+           g2d.setColor(Color.white);
+           g2d.drawString(s, 12, 150);
+           String start = "Press SPACE to restart";
+           g2d.setColor(Color.yellow);
+           g2d.drawString(start, 12, 173);
+       }
+       else if (lev == 6){
+           String s = "WELL DONE YOU COMPLETED THE GAME!";
+           g2d.setColor(Color.white);
+           g2d.drawString(s, 12, 150);
+           String start = "Press SPACE to start";
+           g2d.setColor(Color.yellow);
+           g2d.drawString(start, 12, 173);
+       }
+    }
     private void drawScore(Graphics2D g) {
         g.setFont(smallFont);
         g.setColor(new Color(5, 181, 79));
         String s = "Score: " + score;
         g.drawString(s, SCREEN_SIZE / 2 + 96, SCREEN_SIZE + 16);
+        int lev = (score / 194) +1 ;
+        String l = "level: " + lev;
+        g.drawString(l, SCREEN_SIZE / 2 + 25 , SCREEN_SIZE + 16);
 
         for (int i = 0; i < lives; i++) {
             g.drawImage(heart, i * 28 + 8, SCREEN_SIZE + 1, this);
@@ -130,29 +158,37 @@ public class Model extends JPanel implements ActionListener {
 
         int i = 0;
         boolean finished = true;
-
+        int lev = (score /194)+1 ;
         while (i < N_BLOCKS * N_BLOCKS && finished) {
 
-            if ((screenData[i]) != 0) {
+            if ((score % 194) != 0) {
                 finished = false;
             }
 
             i++;
         }
 
-        if (finished) {
+        if (finished && lev != 6) {
 
-            score += 50;
+            //score += 50;
 
-            if (N_GHOSTS < MAX_GHOSTS) {
+            if (N_GHOSTS < 6) {
                 N_GHOSTS++;
             }
 
             if (currentSpeed < maxSpeed) {
                 currentSpeed++;
             }
+            if(lives != 3)
+            {
+                lives=3;
+            }
 
             initLevel();
+        }
+        else if(lev==7)
+        {
+            inGame=false;
         }
     }
 
@@ -162,6 +198,7 @@ public class Model extends JPanel implements ActionListener {
 
         if (lives == 0) {
             inGame = false;
+            dead = true;
         }
 
         continueLevel();
@@ -251,10 +288,11 @@ public class Model extends JPanel implements ActionListener {
         if (pacman_x % BLOCK_SIZE == 0 && pacman_y % BLOCK_SIZE == 0) {
             pos = pacman_x / BLOCK_SIZE + N_BLOCKS * (int) (pacman_y / BLOCK_SIZE);
             ch = screenData[pos];
-
+            //per mantenere posizione contro ostacolo
             if ((ch & 16) != 0) {
-                screenData[pos] = (short) (ch & 15);
+                screenData[pos] = (short) (ch & 15);// 15 utilizzato per resettare valori iniziali
                 score++;
+                // mangia un pallino
             }
 
             if (req_dx != 0 || req_dy != 0) {
@@ -307,7 +345,7 @@ public class Model extends JPanel implements ActionListener {
                 if ((levelData[i] == 0)) {
                     g2d.fillRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
                 }
-
+                // quando mangia un pallino screndata[i]=0 quini non entra da nessuna parte e non ridisegna
                 if ((screenData[i] & 1) != 0) {
                     g2d.drawLine(x, y, x, y + BLOCK_SIZE - 1);
                 }
@@ -341,7 +379,7 @@ public class Model extends JPanel implements ActionListener {
         lives = 3;
         score = 0;
         initLevel();
-        N_GHOSTS = 6;
+        N_GHOSTS = 1;
         currentSpeed = 1;  //era 6//
     }
 
@@ -387,10 +425,10 @@ public class Model extends JPanel implements ActionListener {
 
 
     public void paintComponent(Graphics g) {
-        super.paintComponent(g);
+        super.paintComponent(g); //
 
         Graphics2D g2d = (Graphics2D) g;
-
+        int lev = (score /194) +1;
         g2d.setColor(Color.black);
         g2d.fillRect(0, 0, d.width, d.height);
 
@@ -399,8 +437,16 @@ public class Model extends JPanel implements ActionListener {
 
         if (inGame) {
             playGame(g2d);
-        } else {
+        } else  if (!inGame && !dead){
             showIntroScreen(g2d);
+        }
+        else if(!inGame && dead)
+        {
+            showOutroScreen(g2d);
+        }
+        else if( !inGame && lev == 6)
+        {
+            showOutroScreen(g2d);
         }
 
         Toolkit.getDefaultToolkit().sync();
@@ -448,3 +494,4 @@ public class Model extends JPanel implements ActionListener {
     }
 
 }
+
